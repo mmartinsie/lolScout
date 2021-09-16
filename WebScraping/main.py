@@ -7,12 +7,37 @@ import os
 
 # Global variables
 SCROLL_PAUSE_TIME = 0.5
+NUMBER_OF_CHAMPS = 156
 
 # Configuration of webdriver to use Google Chrome browser
 driver = webdriver.Chrome(executable_path = 'C:/WebDriver/bin/chromedriver.exe')
 url='https://www.leagueofgraphs.com/es/champions/stats'
 driver.get(url)
-time.sleep(5)
+time.sleep(3)
+# driver.maximize_window()
+driver.find_element_by_xpath('//*[@id="championsFilter"]/a').click()
+
+allChampionList = driver.find_element_by_xpath('//*[@id="drop-champions"]/ul')
+champ_string = []
+
+
+i = 2
+for i in range(2, (NUMBER_OF_CHAMPS+1)):
+   
+    try:
+        # driver.find_element_by_xpath('//*[@id="drop-champions"]/ul/li['+str(i)+']').click()
+        champ_string.append(driver.find_element_by_xpath('//*[@id="drop-champions"]/ul/li['+str(i)+']').text.lower())
+        
+    except:
+        pass
+print(champ_string)
+print(len(champ_string))
+
+
+# print(allChampionList.text)
+
+# champUrlList = allChampionList.find_all("li")
+# print(champUrlList)
 """
 # Scrapping pages
 k = 1
