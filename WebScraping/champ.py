@@ -10,5 +10,5 @@ class Champ:
     def toString(self):
         print('Nombre:', self.nombre)
         print('Winrate:', self.winrate)
-        print('Banrate:', self.banrate)
-        print('Pickrate:', self.pickrate)
+       # print('Banrate:', self.banrate)
+       # print('Pickrate:', self.pickrate)
