@@ -8,15 +8,17 @@ import os
 import json
 
 
-def scrap_champ(url):
+def scrap_champ(url,champ):
     driver = webdriver.Chrome(executable_path = 'C:/WebDriver/bin/chromedriver.exe')
-    driver.get(url)
+    url_esp = url+champ.replace(' ','').replace("'",'')
+    print('url',url_esp)
+    driver.get(url_esp)
     time.sleep(5)
     html = driver.page_source
     soup = BeautifulSoup(html, 'html.parser')
     scripts = soup.findAll('script')
     with open('champs_information.csv', 'a', newline='') as csv_file:
-        headers = ['Popularity', 'WR','Banrate', 'Main', 'Pentakills', 'Gold', 'Minions', 'Wards', 'Damage', 'Phistory', 'WRhistory', 'BRhistory'] 
+        headers = ['Name', 'Popularity', 'WR','Banrate', 'Main', 'Pentakills', 'Gold', 'Minions', 'Wards', 'Damage', 'Phistory', 'WRhistory', 'BRhistory'] 
         writer = csv.DictWriter(csv_file, fieldnames=headers)
 
         wrhistoryscript = ''
@@ -69,5 +71,5 @@ def scrap_champ(url):
         damage =  driver.find_element_by_xpath('/html/body/div[2]/div[3]/div[3]/div[1]/div[2]/div[2]/div[2]/div[6]/div[4]/div/div[1]').text
         print(damage)
     
-        writer.writerow({'Popularity': popularity, 'WR': wr, 'Banrate': banrate, 'Main': main, 'Pentakills': pentakills, 'Gold': gold, 'Minions': minions, 'Wards': wards, 'Damage': damage, 'Phistory': popularhistory, 'WRhistory': wrhistory, 'BRhistory': brhistory})
+        writer.writerow({'Name': champ,'Popularity': popularity, 'WR': wr, 'Banrate': banrate, 'Main': main, 'Pentakills': pentakills, 'Gold': gold, 'Minions': minions, 'Wards': wards, 'Damage': damage, 'Phistory': popularityhistory, 'WRhistory': wrhistory, 'BRhistory': brhistory})
         driver.close()
