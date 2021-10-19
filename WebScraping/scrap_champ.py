@@ -10,7 +10,7 @@ import json
 
 def scrap_champ(url,champ):
     driver = webdriver.Chrome(executable_path = 'C:/WebDriver/bin/chromedriver.exe')
-    url_esp = url+champ.replace(' ','').replace("'",'')
+    url_esp = url+champ.replace(' ','').replace("'",'').replace(".",'')
     print('url',url_esp)
     driver.get(url_esp)
     time.sleep(5)

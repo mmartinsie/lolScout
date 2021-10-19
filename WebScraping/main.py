@@ -37,7 +37,7 @@ print(champ_bucket)
 print(len(champ_bucket))
 
 for champ_string in champ_bucket:
-    scrap_champ(URL_ESP,champ_string.replace(' ','').replace("'",''))
+    scrap_champ(URL_ESP,champ_string)
 
     # continue_link = driver.find_element_by_partial_link_text('graphFuncgraphDD5')
     # print(continue_link)
