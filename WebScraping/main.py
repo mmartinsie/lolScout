@@ -9,7 +9,7 @@ import os
 import json
 
 # Global variables
-NUMBER_OF_CHAMPS = 156
+NUMBER_OF_CHAMPS = 160
 URL='https://www.leagueofgraphs.com/en/champions/stats/'
 URL_ESP='https://www.leagueofgraphs.com/es/champions/stats/'
 
@@ -25,7 +25,7 @@ champ_bucket = []
 
 
 i = 2
-for i in range(2, NUMBER_OF_CHAMPS):
+for i in range(156, NUMBER_OF_CHAMPS):
    
     try:
         # driver.find_element_by_xpath('//*[@id="drop-champions"]/ul/li['+str(i)+']').click()

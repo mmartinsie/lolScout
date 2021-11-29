@@ -6,6 +6,8 @@ import csv
 import time
 import os
 import json
+import datetime
+
 
 
 def scrap_champ(url,champ):
@@ -18,7 +20,7 @@ def scrap_champ(url,champ):
     soup = BeautifulSoup(html, 'html.parser')
     scripts = soup.findAll('script')
     with open('champs_information.csv', 'a', newline='') as csv_file:
-        headers = ['Name', 'Popularity', 'WR','Banrate', 'Main', 'Pentakills', 'Gold', 'Minions', 'Wards', 'Damage', 'Phistory', 'WRhistory', 'BRhistory'] 
+        headers = ['Name', 'Popularity', 'WR','Banrate', 'Main', 'Pentakills', 'Gold', 'Minions', 'Wards', 'Damage', 'Phistory', 'PhistoryDate', 'WRhistory', 'WRhistoryDate', 'BRhistory', 'BRhistoryDate'] 
         writer = csv.DictWriter(csv_file, fieldnames=headers)
 
         wrhistoryscript = ''
@@ -27,18 +29,27 @@ def scrap_champ(url,champ):
                 popularityhistoryscript = script.text
                 data = popularityhistoryscript.split('data: ')
                 lines = data[1].split('lines')[0]
-                popularityhistory = lines.split(',\n')[0]
+                ph = lines.split(',\n')[0]
+                popularityhistoryall = json.loads(ph)
+                popularityhistory = [row[1] for row in popularityhistoryall]
+                popularityhistorydate = [datetime.datetime.fromtimestamp(row[0]/1000).strftime('%Y-%m-%d') for row in popularityhistoryall]
             if script.text.find('graphFuncgraphDD6')!=-1:
                 wrhistoryscript = script.text
-                data = wrhistoryscript.split('data')
+                data = wrhistoryscript.split('data: ')
                 lines = data[1].split('lines')[0]
-                wrhistory = lines.split(',\n')[0]
+                wh = lines.split(',\n')[0]
+                wrhistoryall = json.loads(wh)
+                wrhistory = [row[1] for row in wrhistoryall]
+                wrhistorydate = [datetime.datetime.fromtimestamp(row[0]/1000).strftime('%Y-%m-%d') for row in wrhistoryall]
             if script.text.find('graphFuncgraphDD7')!=-1:
                 brhistoryscript = script.text
-                data = wrhistoryscript.split('data')
+                data = wrhistoryscript.split('data: ')
                 lines = data[1].split('lines')[0]
-                brhistory = lines.split(',\n')[0]
-    	
+                bh = lines.split(',\n')[0]
+                brhistoryall = json.loads(bh)
+                brhistory = [row[1] for row in brhistoryall]
+                brhistorydate = [datetime.datetime.fromtimestamp(row[0]/1000).strftime('%Y-%m-%d') for row in brhistoryall]
+
         popularity =  driver.find_element_by_xpath('//*[@id="graphDD1"]').text
         a = slice(len(popularity)-1)
         popularity = popularity[a]
@@ -71,5 +82,5 @@ def scrap_champ(url,champ):
         damage =  driver.find_element_by_xpath('/html/body/div[2]/div[3]/div[3]/div[1]/div[2]/div[2]/div[2]/div[6]/div[4]/div/div[1]').text
         print(damage)
     
-        writer.writerow({'Name': champ,'Popularity': popularity, 'WR': wr, 'Banrate': banrate, 'Main': main, 'Pentakills': pentakills, 'Gold': gold, 'Minions': minions, 'Wards': wards, 'Damage': damage, 'Phistory': popularityhistory, 'WRhistory': wrhistory, 'BRhistory': brhistory})
+        writer.writerow({'Name': champ,'Popularity': popularity, 'WR': wr, 'Banrate': banrate, 'Main': main, 'Pentakills': pentakills, 'Gold': gold, 'Minions': minions, 'Wards': wards, 'Damage': damage, 'Phistory': popularityhistory, 'PhistoryDate': popularityhistorydate, 'WRhistory': wrhistory, 'WRhistoryDate': wrhistorydate, 'BRhistory': brhistory, 'BRhistoryDate': brhistorydate})
         driver.close()
