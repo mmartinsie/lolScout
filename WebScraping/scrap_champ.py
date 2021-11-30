@@ -32,7 +32,8 @@ def scrap_champ(url,champ):
                 ph = lines.split(',\n')[0]
                 popularityhistoryall = json.loads(ph)
                 popularityhistory = [row[1] for row in popularityhistoryall]
-                popularityhistorydate = [datetime.datetime.fromtimestamp(row[0]/1000).strftime('%Y-%m-%d') for row in popularityhistoryall]
+                #popularityhistorydate = [datetime.datetime.fromtimestamp(row[0]/1000).strftime('%Y-%m-%d') for row in popularityhistoryall]
+                popularityhistorydate = [row[0] for row in popularityhistoryall]
             if script.text.find('graphFuncgraphDD6')!=-1:
                 wrhistoryscript = script.text
                 data = wrhistoryscript.split('data: ')
@@ -40,7 +41,8 @@ def scrap_champ(url,champ):
                 wh = lines.split(',\n')[0]
                 wrhistoryall = json.loads(wh)
                 wrhistory = [row[1] for row in wrhistoryall]
-                wrhistorydate = [datetime.datetime.fromtimestamp(row[0]/1000).strftime('%Y-%m-%d') for row in wrhistoryall]
+                #wrhistorydate = [datetime.datetime.fromtimestamp(row[0]/1000).strftime('%Y-%m-%d') for row in wrhistoryall]
+                wrhistorydate = [row[0] for row in wrhistoryall]
             if script.text.find('graphFuncgraphDD7')!=-1:
                 brhistoryscript = script.text
                 data = wrhistoryscript.split('data: ')
@@ -48,7 +50,8 @@ def scrap_champ(url,champ):
                 bh = lines.split(',\n')[0]
                 brhistoryall = json.loads(bh)
                 brhistory = [row[1] for row in brhistoryall]
-                brhistorydate = [datetime.datetime.fromtimestamp(row[0]/1000).strftime('%Y-%m-%d') for row in brhistoryall]
+                #brhistorydate = [datetime.datetime.fromtimestamp(row[0]/1000).strftime('%Y-%m-%d') for row in brhistoryall]
+                brhistorydate = [row[0] for row in brhistoryall]
 
         popularity =  driver.find_element_by_xpath('//*[@id="graphDD1"]').text
         a = slice(len(popularity)-1)

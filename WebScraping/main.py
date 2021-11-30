@@ -25,7 +25,7 @@ champ_bucket = []
 
 
 i = 2
-for i in range(156, NUMBER_OF_CHAMPS):
+for i in range(2, NUMBER_OF_CHAMPS):
    
     try:
         # driver.find_element_by_xpath('//*[@id="drop-champions"]/ul/li['+str(i)+']').click()
