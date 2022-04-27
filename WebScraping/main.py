@@ -7,9 +7,12 @@ import csv
 import time
 import os
 import json
+import xlsxwriter
+from openpyxl import Workbook
 
 # Global variables
-NUMBER_OF_CHAMPS = 160
+NUMBER_OF_CHAMPS = 161
+# NUMBER_OF_CHAMPS = 5
 URL='https://www.leagueofgraphs.com/en/champions/stats/'
 URL_ESP='https://www.leagueofgraphs.com/es/champions/stats/'
 
@@ -23,9 +26,12 @@ driver.find_element_by_xpath('//*[@id="championsFilter"]/a').click()
 allChampionList = driver.find_element_by_xpath('//*[@id="drop-champions"]/ul')
 champ_bucket = []
 
+#wb = Workbook()
+#wb.create_sheet(title="V12.6")
+#wb.save(filename = r'C:\Users\Manuel Martín Sierra\Documents\lolScout\WebScraping\champInfoVersion.xlsx')
 
 i = 2
-for i in range(2, NUMBER_OF_CHAMPS):
+for i in range(160, NUMBER_OF_CHAMPS):
    
     try:
         # driver.find_element_by_xpath('//*[@id="drop-champions"]/ul/li['+str(i)+']').click()
@@ -36,8 +42,10 @@ for i in range(2, NUMBER_OF_CHAMPS):
 print(champ_bucket)
 print(len(champ_bucket))
 
+number_of_champ=0
 for champ_string in champ_bucket:
-    scrap_champ(URL_ESP,champ_string)
+    scrap_champ(URL_ESP,champ_string,number_of_champ)
+    number_of_champ+=1
 
     # continue_link = driver.find_element_by_partial_link_text('graphFuncgraphDD5')
     # print(continue_link)
@@ -46,3 +54,4 @@ for champ_string in champ_bucket:
 
 # champUrlList = allChampionList.find_all("li")
 # print(champUrlList)
+driver.close()
