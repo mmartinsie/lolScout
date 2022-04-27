@@ -26,12 +26,13 @@ driver.find_element_by_xpath('//*[@id="championsFilter"]/a').click()
 allChampionList = driver.find_element_by_xpath('//*[@id="drop-champions"]/ul')
 champ_bucket = []
 
-#wb = Workbook()
-#wb.create_sheet(title="V12.6")
-#wb.save(filename = r'C:\Users\Manuel Martín Sierra\Documents\lolScout\WebScraping\champInfoVersion.xlsx')
+wb = Workbook()
+wb.create_sheet(title="V12.6")
+wb.save(filename = r'C:\Users\Manuel Martín Sierra\Documents\lolScout\WebScraping\champInfoVersion.xlsx')
 
 i = 2
-for i in range(160, NUMBER_OF_CHAMPS):
+# NUMBER_OF_CHAMPS
+for i in range(2, NUMBER_OF_CHAMPS):
    
     try:
         # driver.find_element_by_xpath('//*[@id="drop-champions"]/ul/li['+str(i)+']').click()
