@@ -90,7 +90,7 @@ def scrap_champ(url,champ,number_of_champ):
     #print(damage)
 
 
-    complete_info =[champ, popularity, wr, banrate, main, pentakills, minions, wards]
+    complete_info = [champ, popularity, wr, banrate, main, pentakills, minions, wards]
     worksheet.append(complete_info)
 
     for i in range(len(popularityhistorydate)):

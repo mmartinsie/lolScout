@@ -21,6 +21,60 @@ mid = ["ahri", "akali", "akshan", "anivia", "annie", "aurelion sol", "azir", "ca
 adc = ["aphelios", "ashe", "caitlyn", "draven", "ezreal", "jhin", "jinx", "kai'sa", "kalista", "kog'maw", "lucian", "miss fortune", "samira", "sivir", "tristana", "twitch", "varus", "vayne", "xayah", "zeri"]
 supp = ["alistar", "bard", "blitzcrank", "brand", "braum", "janna", "karma", "leona","lulu", "lux", "morgana", "nami", "nautilus", "pyke", "rakan", "rell", "renata glasc", "senna", "seraphine","sona", "soraka", "swain", "taric", "thresh", "vel'koz", "yuumi", "zilean", "zyra"]
 
+
+unoEleccion = ""
+dosEleccion = ""
+tresEleccion = ""
+cuatroEleccion = ""
+cincoEleccion = ""
+
+unoPeso = 0
+dosPeso = 0
+tresPeso = 0
+cuatroPeso = 0
+cincoPeso = 0
+
+for i in range(len(df.Name)): 
+    peso = calcularPeso(df.iloc[i])
+    if (peso >= unoPeso):
+        cincoPeso = cuatroPeso
+        cincoEleccion = cuatroEleccion
+        cuatroPeso = tresPeso
+        cuatroEleccion = tresEleccion
+        tresPeso = dosPeso
+        tresEleccion = dosEleccion
+        dosPeso = unoPeso
+        dosEleccion = unoEleccion
+        unoPeso = peso
+        unoEleccion = df.Name[i]
+    elif (peso >= dosPeso):
+        cincoPeso = cuatroPeso
+        cincoEleccion = cuatroEleccion
+        cuatroPeso = tresPeso
+        cuatroEleccion = tresEleccion
+        tresPeso = dosPeso
+        tresEleccion = dosEleccion
+        dosPeso = peso
+        dosEleccion = df.Name[i]
+    elif (peso >= tresPeso):
+        cincoPeso = cuatroPeso
+        cincoEleccion = cuatroEleccion
+        cuatroPeso = tresPeso
+        cuatroEleccion = tresEleccion
+        tresPeso = peso
+        tresEleccion = df.Name[i]
+    elif (peso >= cuatroPeso):
+        cincoPeso = cuatroPeso
+        cincoEleccion = cuatroEleccion
+        cuatroPeso = peso
+        cuatroEleccion = df.Name[i]
+    elif (peso >= cincoPeso):
+        cincoPeso = peso
+        cincoEleccion = df.Name[i]
+
+print(f"Los cinco mejores campeones de la version son \n 1) {unoEleccion} \n 2) {dosEleccion} \n 3) {tresEleccion} \n 4) {cuatroEleccion} \n 5) {cincoEleccion}")
+
+
 forbidenChamps=[]
 
 print("Posición elegida (mid,top,jung,adc,supp): ")

@@ -11,7 +11,7 @@ import xlsxwriter
 from openpyxl import Workbook
 
 # Global variables
-NUMBER_OF_CHAMPS = 161
+NUMBER_OF_CHAMPS = 164
 # NUMBER_OF_CHAMPS = 5
 URL='https://www.leagueofgraphs.com/en/champions/stats/'
 URL_ESP='https://www.leagueofgraphs.com/es/champions/stats/'
@@ -39,7 +39,7 @@ wbBR.save(filename = r'C:\Users\Manuel Martín Sierra\Documents\TFG\Series tempo
 
 i = 2
 # NUMBER_OF_CHAMPS
-for i in range(2, 7):
+for i in range(2, NUMBER_OF_CHAMPS):
    
     try:
         # driver.find_element_by_xpath('//*[@id="drop-champions"]/ul/li['+str(i)+']').click()
