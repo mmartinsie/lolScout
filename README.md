@@ -4,6 +4,10 @@ lolScout collects *League of Legends* champion statistics from leagueofgraphs.co
 into two things: a data-driven pick recommendation for the current patch, and a longer-term view
 of how each champion's popularity, win rate and ban rate move across patches.
 
+**[Try the pick recommender in your browser →](https://mmartinsie.github.io/lolScout/)** — a
+static demo (see [Live demo](#live-demo)) that runs the same scoring logic client-side against a
+bundled sample snapshot; no scraping happens from that page.
+
 ## Context
 
 lolScout is the code behind two Bachelor's theses completed at Universidad Rey Juan Carlos
@@ -48,6 +52,24 @@ DataProcessing/data_processing.py   RStudio/ (TFG.R, TFG-BR.R)
   → best pick for a role, given         forecasts of future win rate & ban rate
     already picked/banned champions
 ```
+
+## Live demo
+
+**https://mmartinsie.github.io/lolScout/** — a static site (in [`docs/`](docs/), served by
+GitHub Pages) with two things you can try without installing anything:
+
+- The **pick recommender**, running in your browser: pick a role and tick off already
+  picked/banned champions, and it scores every champion with the exact same formula as
+  [`DataProcessing/data_processing.py`](DataProcessing/data_processing.py) — ported to
+  JavaScript ([`docs/app.js`](docs/app.js)) and run entirely client-side against the bundled
+  sample snapshot. No scraping happens from that page.
+- A handful of **pre-generated results** from the time-series analysis (win/ban/pick-rate charts
+  and two per-champion win-rate series) as a sample of what [`RStudio/`](RStudio/) produces —
+  static images, not recalculated on the page (that needs a full R environment).
+
+The Pages site isn't enabled automatically on a fork — turn it on under *Settings → Pages →
+Deploy from a branch → `master` / `/docs`*. See [`docs/README.md`](docs/README.md) for how the
+demo is put together and how to refresh its sample data.
 
 ## Getting started
 
@@ -204,7 +226,7 @@ environment-variable override — see [Getting started](#2-configure-the-scraper
 | [`DataProcessing/`](DataProcessing/) | Turns a patch snapshot CSV into a simple champion-picking recommendation. See [DataProcessing/README.md](DataProcessing/README.md). |
 | [`RStudio/`](RStudio/) | Clustering and time-series forecasting of champion stats history. See [RStudio/README.md](RStudio/README.md). |
 | [`tests/`](tests/) | Pytest suite for the scoring logic and the scraper configuration; runs in CI (`.github/workflows/ci.yml`). |
-| [`docs/`](docs/) | Full text of both Bachelor's theses (PDF, Spanish). |
+| [`docs/`](docs/) | Full text of both Bachelor's theses (PDF, Spanish), plus the [live demo](#live-demo) GitHub Pages site. See [docs/README.md](docs/README.md). |
 | [`otros/`](otros/) | A single extra copy of a champions CSV snapshot, kept for reference. |
 
 ## Known limitations
