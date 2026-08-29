@@ -1,97 +1,65 @@
-import requests
 from selenium import webdriver
+from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
-from xml.etree import ElementTree
-import csv
-import xlsxwriter
 import openpyxl
 import time
-import os
 import json
 import datetime
 
+import config
+from scrap_champ import _slugify, _read_chart_history
 
 
-def scrap_graphics(url,champ,number_of_champ):
-    driver = webdriver.Chrome(executable_path = 'C:/WebDriver/bin/chromedriver.exe')
-    print('fortnite',champ)
-    url_esp = url+champ.replace(' ','').replace("'",'').replace(".",'').replace("wukong",'monkeyking').replace("glasc","")
-    print('url',url_esp)
-    driver.get(url_esp)
-    time.sleep(5)
-    html = driver.page_source
-    soup = BeautifulSoup(html, 'html.parser')
-    scripts = soup.findAll('script')
+def scrap_graphics(url, champ, number_of_champ):
+    config.ensure_output_dirs()
+    driver = webdriver.Chrome(executable_path=config.CHROMEDRIVER_PATH)
+    try:
+        print('Scraping champion history:', champ)
+        url_champ = url + _slugify(champ)
+        print('URL:', url_champ)
+        driver.get(url_champ)
+        time.sleep(config.PAGE_LOAD_DELAY)
+        html = driver.page_source
+        soup = BeautifulSoup(html, 'html.parser')
+        scripts = soup.findAll('script')
 
-    #Excel Pop
-    workbookPopHistory = openpyxl.load_workbook(filename = r'C:\Users\Manuel Martín Sierra\Documents\TFG\Series temporales\champsHistoryGraphics\champInfoPopComplete.xlsx')
-    worksheetPopHistory = workbookPopHistory.active
+        workbookPopHistory = openpyxl.load_workbook(filename=config.POP_HISTORY_WORKBOOK)
+        worksheetPopHistory = workbookPopHistory.active
 
-    #Excel WR
-    workbookWRHistory = openpyxl.load_workbook(filename = r'C:\Users\Manuel Martín Sierra\Documents\TFG\Series temporales\champsHistoryGraphics\champInfoWRComplete.xlsx')
-    worksheetWRHistory = workbookWRHistory.active
+        workbookWRHistory = openpyxl.load_workbook(filename=config.WR_HISTORY_WORKBOOK)
+        worksheetWRHistory = workbookWRHistory.active
 
-    #Excel BR
-    workbookBRHistory  = openpyxl.load_workbook(filename = r'C:\Users\Manuel Martín Sierra\Documents\TFG\Series temporales\champsHistoryGraphics\champInfoBRComplete.xlsx')
-    worksheetBRHistory = workbookBRHistory.active
+        workbookBRHistory = openpyxl.load_workbook(filename=config.BR_HISTORY_WORKBOOK)
+        worksheetBRHistory = workbookBRHistory.active
 
+        popularityhistory, popularityhistorydate, wrhistory, brhistory = _read_chart_history(scripts)
+        # Combined workbooks are built oldest-first (one column per champion), while the
+        # per-champion workbooks in scrap_champ.py keep the site's newest-first order.
+        popularityhistory = popularityhistory[::-1]
+        popularityhistorydate = popularityhistorydate[::-1]
+        wrhistory = wrhistory[::-1]
+        brhistory = brhistory[::-1]
 
+        for i in range(len(popularityhistorydate)):
+            worksheetPopHistory.cell(row=i + 1, column=1).value = popularityhistorydate[i - 1]
+            worksheetPopHistory.cell(row=i + 1, column=1 + number_of_champ).value = popularityhistory[i - 1]
 
-    wrhistoryscript = ''
+            worksheetWRHistory.cell(row=i + 1, column=1).value = popularityhistorydate[i - 1]
+            worksheetWRHistory.cell(row=i + 1, column=1 + number_of_champ).value = wrhistory[i - 1]
 
-    for script in scripts:
-        if script.text.find('graphFuncgraphDD5')!=-1:
-            popularityhistoryscript = script.text
-            data = popularityhistoryscript.split('data: ')
-            lines = data[1].split('lines')[0]
-            ph = lines.split(',\n')[0]
-            popularityhistoryall = json.loads(ph)
-            popularityhistory = [row[1] for row in popularityhistoryall]
-            popularityhistorydate = [datetime.datetime.fromtimestamp(row[0]/1000).strftime('%Y-%m-%d') for row in popularityhistoryall]
-            popularityhistorydate = popularityhistorydate[::-1]
-            popularityhistory = popularityhistory[::-1]
-            # popularityhistorydate = [row[0] for row in popularityhistoryall]
-        if script.text.find('graphFuncgraphDD6')!=-1:
-            wrhistoryscript = script.text
-            data = wrhistoryscript.split('data: ')
-            lines = data[1].split('lines')[0]
-            wh = lines.split(',\n')[0]
-            wrhistoryall = json.loads(wh)
-            wrhistory = [row[1] for row in wrhistoryall]
-            #wrhistorydate = [datetime.datetime.fromtimestamp(row[0]/1000).strftime('%Y-%m-%d') for row in wrhistoryall]
-            wrhistorydate = [row[0] for row in wrhistoryall]
-            wrhistorydate = wrhistorydate[::-1]
-        if script.text.find('graphFuncgraphDD7')!=-1:
-            brhistoryscript = script.text
-            data = brhistoryscript.split('data: ')
-            lines = data[1].split('lines')[0]
-            bh = lines.split(',\n')[0]
-            brhistoryall = json.loads(bh)
-            brhistory = [row[1] for row in brhistoryall]
-            #brhistorydate = [datetime.datetime.fromtimestamp(row[0]/1000).strftime('%Y-%m-%d') for row in brhistoryall]
-            brhistorydate = [row[0] for row in brhistoryall]
-            brhistorydate = brhistorydate[::-1]
+            worksheetBRHistory.cell(row=i + 1, column=1).value = popularityhistorydate[i - 1]
+            worksheetBRHistory.cell(row=i + 1, column=1 + number_of_champ).value = brhistory[i - 1]
 
-    for i in range(len(popularityhistorydate)):
-        worksheetPopHistory.cell(row=i+1,column=1).value = popularityhistorydate[i-1]
-        worksheetPopHistory.cell(row=i+1,column=1+number_of_champ).value = popularityhistory[i-1]
-        
-        worksheetWRHistory.cell(row=i+1,column=1).value = popularityhistorydate[i-1]
-        worksheetWRHistory.cell(row=i+1,column=1+number_of_champ).value = wrhistory[i-1]
-       
-        worksheetBRHistory.cell(row=i+1,column=1).value = popularityhistorydate[i-1]
-        worksheetBRHistory.cell(row=i+1,column=1+number_of_champ).value = brhistory[i-1]
+        worksheetPopHistory.cell(row=1, column=1).value = "date"
+        worksheetWRHistory.cell(row=1, column=1).value = "date"
+        worksheetBRHistory.cell(row=1, column=1).value = "date"
 
-    worksheetPopHistory.cell(row=1,column=1).value = "date"
-    worksheetWRHistory.cell(row=1,column=1).value = "date"
-    worksheetBRHistory.cell(row=1,column=1).value = "date"
+        worksheetPopHistory.cell(row=1, column=1 + number_of_champ).value = champ
+        worksheetWRHistory.cell(row=1, column=1 + number_of_champ).value = champ
+        worksheetBRHistory.cell(row=1, column=1 + number_of_champ).value = champ
 
-    worksheetPopHistory.cell(row=1,column=1+number_of_champ).value = champ
-    worksheetWRHistory.cell(row=1,column=1+number_of_champ).value = champ
-    worksheetBRHistory.cell(row=1,column=1+number_of_champ).value = champ
-    
-    workbookPopHistory.save(r'C:\Users\Manuel Martín Sierra\Documents\TFG\Series temporales\champsHistoryGraphics\champInfoPopComplete.xlsx')
-    workbookWRHistory.save(r'C:\Users\Manuel Martín Sierra\Documents\TFG\Series temporales\champsHistoryGraphics\champInfoWRComplete.xlsx')
-    workbookBRHistory.save(r'C:\Users\Manuel Martín Sierra\Documents\TFG\Series temporales\champsHistoryGraphics\champInfoBRComplete.xlsx')
-
-    driver.close()
+        workbookPopHistory.save(config.POP_HISTORY_WORKBOOK)
+        workbookWRHistory.save(config.WR_HISTORY_WORKBOOK)
+        workbookBRHistory.save(config.BR_HISTORY_WORKBOOK)
+    finally:
+        driver.quit()

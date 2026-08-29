@@ -21,7 +21,9 @@ Computer Science and a BSc in Mathematics — each looking at the same data from
 
 The two are complementary: the Computer Science thesis is what gets the data out of the website
 and into a usable shape; the Mathematics thesis is what that data is analysed with once it's
-been collected over enough patches to form time series.
+been collected over enough patches to form time series. Both PDFs are the full, original thesis
+text and are copyrighted by the author — see [License](#license) for what that does and doesn't
+cover.
 
 ## How it works
 
@@ -64,28 +66,19 @@ cd lolScout
 pip install -r requirements.txt
 ```
 
-`requirements.txt` pins `selenium<4.3.0` because the scraping scripts use Selenium's legacy
-`find_element_by_xpath(...)` API, removed in Selenium 4.3.
+### 2. Configure the scraper
 
-### 2. Point the scripts at your own machine
+Every path and setting the scraper needs lives in [`WebScraping/config.py`](WebScraping/config.py)
+with defaults that work out of the box (ChromeDriver on `PATH`, outputs written inside the repo),
+and every one of them can be overridden with an environment variable instead of editing code:
 
-The scraping scripts were written for one specific machine and still contain hardcoded, absolute
-Windows paths — update these before running them:
+```bash
+export CHROMEDRIVER_PATH=/usr/local/bin/chromedriver   # if it's not on PATH
+export LOLSCOUT_PATCH_VERSION=V14.1                     # the patch you're scraping
+```
 
-- **ChromeDriver path** — `webdriver.Chrome(executable_path='C:/WebDriver/bin/chromedriver.exe')`
-  in [`main.py`](WebScraping/main.py), [`main_graphics.py`](WebScraping/main_graphics.py),
-  [`scrap_champ.py`](WebScraping/scrap_champ.py) and [`scrap_graphics.py`](WebScraping/scrap_graphics.py).
-- **Output paths** — [`scrap_champ.py`](WebScraping/scrap_champ.py) reads/writes
-  `champInfoVersion.xlsx` and `champsHistory/*.xlsx` via absolute paths, and
-  [`scrap_graphics.py`](WebScraping/scrap_graphics.py) writes the three combined history
-  workbooks to a path **outside this repository**. Both need updating to a folder that exists on
-  your machine.
-- **Patch label** — the current patch is hardcoded as a sheet name (e.g. `"V12.6"`) in
-  [`main.py`](WebScraping/main.py) and [`scrap_champ.py`](WebScraping/scrap_champ.py).
-- **Champion count** — `NUMBER_OF_CHAMPS` in `main.py` / `main_graphics.py` must be at least the
-  number of champions currently listed on the site.
-
-See [WebScraping/README.md](WebScraping/README.md) for details on each script.
+See [`config.py`](WebScraping/config.py) for the full list of variables (output locations, the
+target URLs, the champion-count loop bound, the per-page delay).
 
 ### 3. Run it
 
@@ -108,6 +101,19 @@ For the time-series analysis, open [`RStudio/TFG.R`](RStudio/TFG.R) (win rate) o
 to pick the combined history workbook produced by `main_graphics.py`. See
 [RStudio/README.md](RStudio/README.md) for the required R packages and the analysis pipeline.
 
+### Running the tests
+
+```bash
+pip install -r requirements.txt -r requirements-dev.txt
+pytest
+```
+
+The suite (in [`tests/`](tests/)) covers the scoring/recommendation logic in
+[`DataProcessing/data_processing.py`](DataProcessing/data_processing.py) and the configuration
+defaults in [`WebScraping/config.py`](WebScraping/config.py) — it doesn't launch a browser or
+hit the network, so it runs without Chrome/ChromeDriver installed. It also runs in CI on every
+push (see [`.github/workflows/ci.yml`](.github/workflows/ci.yml)).
+
 ## Example output
 
 A row of scraped, patch-snapshot data for one champion
@@ -115,8 +121,11 @@ A row of scraped, patch-snapshot data for one champion
 [DataProcessing/README.md](DataProcessing/README.md) for the full column list):
 
 ```
-zed;12.3;49.4;40.2;1.4;0.0014;6.09;0.24
+zed;12.3;49.4;40.2;1.4;0.0014;;6.09;0.24;
 ```
+
+(The two empty fields are Gold and Damage — this particular sample predates the fix that makes
+`scrap_champ.py` keep those columns; see [Design notes](#design-notes).)
 
 Running the recommender on that snapshot:
 
@@ -150,12 +159,14 @@ user-facing strings.
 talks to leagueofgraphs.com's public stats pages through a real Chrome browser driven by
 Selenium. Each champion is scraped in its own browser session
 (`webdriver.Chrome(...)` created per champion in `scrap_champ.py` / `scrap_graphics.py`), and a
-fixed `time.sleep(5)` after each page load gives the page's charts time to finish rendering
-before BeautifulSoup parses the HTML. It's a simple, conservative throttle — one page at a time,
-no concurrency — rather than protocol-level rate-limit handling, since there's no API contract
-(rate-limit headers, request budget, backoff-and-retry) to honor in the first place. Moving to
-the official Riot Games API, which does define per-key rate limits, would be a reasonable future
-step, but it isn't what this project does today.
+fixed delay after each page load (`PAGE_LOAD_DELAY` in `config.py`, 5 seconds by default) gives
+the page's charts time to finish rendering before BeautifulSoup parses the HTML. It's a simple,
+conservative throttle — one page at a time, no concurrency — rather than protocol-level
+rate-limit handling, since there's no API contract (rate-limit headers, request budget,
+backoff-and-retry) to honor in the first place. Moving to the official Riot Games API, which does
+define per-key rate limits, would be a reasonable future step, but it isn't what this project
+does today. A failure on any one champion (a missing element, a slow page) is now caught and
+logged rather than aborting the whole run — see `main.py` / `main_graphics.py`.
 
 **Data storage and structure.** Data is kept in Excel workbooks (`.xlsx`, via `openpyxl` /
 `xlsxwriter`) rather than a database, in three shapes:
@@ -173,7 +184,17 @@ while iterating on the scraper, needs no server or schema migration, and both si
 natively (`pandas`/`openpyxl` on the Python side, `readxl` on the R side). `;`-separated CSV
 exports are used as the hand-off format into `pandas` and as flattened reference samples, since a
 manual "save as CSV" step was simpler than building a shared data layer between the Python
-scraper and the R analysis scripts.
+scraper and the R analysis scripts. One concrete fix worth calling out: `scrap_champ.py` used to
+scrape gold and damage per champion and then silently drop both from the saved row; they're now
+kept, so a snapshot row is `Name, Popularity, WR, Banrate, Main, Pentakills, Gold, Minions, Wards,
+Damage` — matching what `RStudio/`'s scripts expected all along. The bundled sample CSV was
+scraped before this fix, so its Gold/Damage fields are blank (not fabricated) rather than
+backfilled.
+
+**Configuration.** Every hardcoded, machine-specific path this project used to have (ChromeDriver
+location, output workbook paths, a folder that pointed outside the repository entirely) now lives
+in [`WebScraping/config.py`](WebScraping/config.py) with a repo-relative default and an
+environment-variable override — see [Getting started](#2-configure-the-scraper).
 
 ## Repository structure
 
@@ -182,6 +203,7 @@ scraper and the R analysis scripts.
 | [`WebScraping/`](WebScraping/) | Selenium scrapers that pull champion stats and history graphs from leagueofgraphs.com. See [WebScraping/README.md](WebScraping/README.md). |
 | [`DataProcessing/`](DataProcessing/) | Turns a patch snapshot CSV into a simple champion-picking recommendation. See [DataProcessing/README.md](DataProcessing/README.md). |
 | [`RStudio/`](RStudio/) | Clustering and time-series forecasting of champion stats history. See [RStudio/README.md](RStudio/README.md). |
+| [`tests/`](tests/) | Pytest suite for the scoring logic and the scraper configuration; runs in CI (`.github/workflows/ci.yml`). |
 | [`docs/`](docs/) | Full text of both Bachelor's theses (PDF, Spanish). |
 | [`otros/`](otros/) | A single extra copy of a champions CSV snapshot, kept for reference. |
 
@@ -190,13 +212,15 @@ scraper and the R analysis scripts.
 - Built against leagueofgraphs.com's markup and Spanish-locale URLs (`/es/...`) as of the 2021–2022
   thesis work; the site's layout, script variable names (`graphFuncgraphDD5/6/7`) and element
   XPaths may have changed since.
-- Hardcoded, machine-specific absolute paths throughout — see
-  [Getting started](#2-point-the-scripts-at-your-own-machine).
-- Uses Selenium's pre-4.3 `find_element_by_xpath` API (see [Prerequisites](#prerequisites)).
-- `scrap_champ.py` scrapes gold and damage stats but doesn't currently include them in the row it
-  saves.
-- No retry/error handling around the scraping — a missing element or a slow page load raises an
-  unhandled exception and stops the run partway through the champion list.
+- There's no reliable way to read the current patch number or champion count from the site, so
+  `LOLSCOUT_PATCH_VERSION` and (to a lesser extent, since the loop already tolerates missing
+  indices) `LOLSCOUT_NUMBER_OF_CHAMPS` still need to be set per run — see `config.py`.
+- Champion-name-to-URL-slug conversion is a small manual patch list in `scrap_champ.py`
+  (`_slugify`) for the handful of champions whose URL doesn't match their display name; a new
+  champion needing the same treatment has to be added there by hand.
+- `RStudio/TFG.R` still `source()`s an auxiliary script, `ARNN.R`, from a path outside this
+  repository — see [RStudio/README.md](RStudio/README.md#arnnr) for where it comes from and what
+  that means for running the script.
 
 ## Disclaimer
 
@@ -208,4 +232,6 @@ responsibly.
 
 ## License
 
-[MIT](LICENSE) © 2022 Manuel Martín Sierra
+The code in this repository is [MIT](LICENSE) © 2022 Manuel Martín Sierra. That license does
+**not** extend to the two thesis PDFs in [`docs/`](docs/) — that's academic writing, kept here as
+reference material and © the author, all rights reserved, independent of the code's license.
