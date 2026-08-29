@@ -15,3 +15,9 @@ venv/
 Thumbs.db
 .vscode/
 .idea/
+
+# Test runs
+.pytest_cache/
+
+# Scraper output written outside the tracked sample data (see WebScraping/config.py)
+WebScraping/champsHistoryGraphics/

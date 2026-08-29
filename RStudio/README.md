@@ -27,14 +27,36 @@ the script derives its working directory from the chosen file's path.
 
 ## Required R packages
 
+Both scripts now only install a package if it isn't already available
+(`requireNamespace(pkg, quietly = TRUE)`), instead of unconditionally reinstalling every package
+on every run:
+
 ```r
-install.packages(c("Rcpp", "readxl", "e1071", "imputeTS", "cluster", "pdc", "TSclust",
-                    "MASS", "forecast", "tsfknn", "rnn", "ForecastComb", "xts", "dygraphs",
-                    "ape", "dplyr", "tidyverse"))
+required_packages <- c("Rcpp", "readxl", "e1071", "imputeTS", "cluster", "pdc", "TSclust",
+                        "MASS", "forecast", "tsfknn", "rnn", "ForecastComb", "xts", "dygraphs",
+                        "ape")
 ```
 
-`TFG.R` also `source()`s an auxiliary script for the autoregressive neural network model,
-`ARNN.R`, from a hardcoded absolute path — see [Known limitations](#known-limitations).
+`dplyr`/`tidyverse` are used in a couple of places further down but aren't part of that
+install-guard list; install them separately if a `dplyr`-related error comes up.
+
+## ARNN.R
+
+`TFG.R` also `source()`s an auxiliary script, `ARNN.R`, for the autoregressive neural network
+forecasting method — from a hardcoded absolute path outside this repository, so it doesn't run
+out of the box. That file is a genuine dependency, not a placeholder: it's the R implementation
+of the `arnn` package used for the ARNN forecasting method (method 3 in the pipeline below), and
+it comes from **Carlos Arias Alcaide**'s Master's thesis at Universidad Rey Juan Carlos,
+*"Análisis avanzado y predicción de series temporales aplicados en un caso de Business
+Analytics"* (Máster en Ingeniería de Sistemas de la Decisión, 2020–2021) — supervised by the same
+tutors as the Mathematics thesis behind this repo. `TFG.R`'s overall structure (the
+`file.choose()` + working-directory setup, the function layout) was modelled on that thesis'
+accompanying code.
+
+`ARNN.R` isn't included in this repository. To run `TFG.R` end to end you'll need to either
+obtain that script (with its author's permission, since it isn't this project's code to
+redistribute) or supply your own equivalent autoregressive-NN forecasting function under the same
+name.
 
 ## Pipeline
 
@@ -61,7 +83,7 @@ install.packages(c("Rcpp", "readxl", "e1071", "imputeTS", "cluster", "pdc", "TSc
    (`ECM`) and MAE (`EAM`) on a held-out test window:
    1. **SARIMA** (`forecast::auto.arima`)
    2. **TBATS** (`forecast::tbats`)
-   3. **ARNN** — autoregressive neural network (via the sourced `ARNN.R` helper)
+   3. **ARNN** — autoregressive neural network (via `ARNN.R`, see above)
    4. **k-NN** — both recursive and MIMO strategies (`tsfknn`)
    5. **SVM** — support vector regression (`e1071`)
    6. **Forecast combination** — arithmetic mean, inverse-variance weighting, and CLS
@@ -71,11 +93,6 @@ install.packages(c("Rcpp", "readxl", "e1071", "imputeTS", "cluster", "pdc", "TSc
 
 ## Known limitations
 
-- `ARNN.R` is `source()`d from a hardcoded absolute path
-  (`C:/Users/Manuel Martín Sierra/Documents/TFG/Series temporales/ARNN.R`) that isn't part of
-  this repository — you'll need to supply that helper script yourself (or inline an equivalent
-  autoregressive-NN forecast function) before `TFG.R`/`TFG-BR.R` will run end to end.
-- `install.packages(...)` calls run unconditionally at the top of both scripts — comment them out
-  once the packages are installed, or they'll try to reinstall every run.
+- `ARNN.R` still needs to be sourced from outside this repository — see [above](#arnnr).
 - Champion names in plot titles/examples near the end of each script are hardcoded (e.g. `jayce`,
   `morgana`) as illustrative examples from the thesis, not a general-purpose report generator.

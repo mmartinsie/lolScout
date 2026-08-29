@@ -1,5 +1,5 @@
 # Web scraping (WebScraping/)
-selenium<4.3.0          # scripts use the legacy find_element_by_xpath API, removed in 4.3+
+selenium>=4.3           # uses the modern find_element(By.XPATH, ...) API
 beautifulsoup4
 openpyxl
 XlsxWriter

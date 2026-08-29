@@ -20,21 +20,15 @@ setwd(directorio)
 
 ########------------------------------------------------------------------------########
 
-# Instalacion de librerias necesarias para cargar script
-install.packages("Rcpp")
-install.packages("readxl") 
-install.packages("e1071") 
-install.packages("imputeTS") 
-install.packages("cluster")
-install.packages("pdc") 
-install.packages("TSclust") 
-install.packages("MASS") 
-install.packages("forecast")
-install.packages("tsfknn") 
-install.packages("rnn") 
-install.packages("ForecastComb") 
-install.packages("xts") 
-install.packages("dygraphs")
+# Instalacion de librerias necesarias para cargar script (solo si no estan ya instaladas;
+# antes se reinstalaban todas en cada ejecucion del script)
+paquetes_necesarios <- c("Rcpp", "readxl", "e1071", "imputeTS", "cluster", "pdc", "TSclust",
+                          "MASS", "forecast", "tsfknn", "rnn", "ForecastComb", "xts", "dygraphs")
+for (paquete in paquetes_necesarios) {
+  if (!requireNamespace(paquete, quietly = TRUE)) {
+    install.packages(paquete)
+  }
+}
 
 # Carga de librerias neceserias para realizar el trabajo
 library(readxl) # Cargar datos
@@ -405,7 +399,7 @@ rm(i, j)
 
 
 # Dendograma con los cinco grupos para cada encadenamiento con distancia CORT
-install.packages("ape")
+if (!requireNamespace("ape", quietly = TRUE)) install.packages("ape")
 library("ape")
 
 colors = c("red", "blue", "green", "black", "orange")
