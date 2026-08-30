@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>lolScout — try it</title>
+  <meta name="description" content="Browser demo of lolScout's champion pick recommender, plus sample results from its time-series analysis.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <h1>lolScout</h1>
+      <p>
+        A browser demo for the pick recommender and a sample of the time-series analysis
+        behind <strong>lolScout</strong> — the League of Legends champion-stats project built
+        from two Bachelor's theses at Universidad Rey Juan Carlos. Everything on this page
+        runs against data already scraped ahead of time; it doesn't scrape
+        leagueofgraphs.com live.
+      </p>
+      <p class="hero-links">
+        <a href="https://github.com/mmartinsie/lolScout">Source code</a>
+        <a href="bsc-thesis-computer-science-lol-data-modelling.pdf">CS thesis (PDF)</a>
+        <a href="bsc-thesis-mathematics-lol-time-series.pdf">Maths thesis (PDF)</a>
+      </p>
+    </header>
+
+    <p class="disclaimer">
+      This demo runs entirely in your browser against a bundled patch snapshot
+      (<code>data/champInfoVersionCSV.csv</code>, the same sample shipped in
+      <a href="https://github.com/mmartinsie/lolScout/tree/master/DataProcessing">DataProcessing/</a>) —
+      it's a fixed patch, not live data, and no request is made to leagueofgraphs.com from
+      this page.
+    </p>
+
+    <section id="recommender">
+      <h2>Pick recommender</h2>
+      <p class="lede">
+        Same weighted formula as
+        <a href="https://github.com/mmartinsie/lolScout/blob/master/DataProcessing/data_processing.py"><code>data_processing.py</code></a>,
+        ported to JavaScript (<a href="app.js">app.js</a>) — pick a role and tick off
+        champions already picked or banned this draft.
+      </p>
+
+      <p id="status">Loading sample data…</p>
+
+      <div class="card recommender-grid" style="display:none" id="recommender-body">
+        <div>
+          <span class="field-label">Role</span>
+          <div id="role-buttons">
+            <button type="button" data-role="top" aria-pressed="false">Top</button>
+            <button type="button" data-role="jung" aria-pressed="false">Jungle</button>
+            <button type="button" data-role="mid" aria-pressed="false">Mid</button>
+            <button type="button" data-role="adc" aria-pressed="false">ADC</button>
+            <button type="button" data-role="supp" aria-pressed="false">Support</button>
+          </div>
+
+          <span class="field-label">Already picked or banned</span>
+          <input type="search" id="champion-search" placeholder="Search champions…">
+          <div class="champion-list-header">
+            <small><span id="unavailable-count">0</span> selected</small>
+            <button type="button" id="clear-unavailable">Clear</button>
+          </div>
+          <div id="champion-list"></div>
+        </div>
+
+        <div class="results">
+          <h3>Top 5 champions this patch</h3>
+          <ul id="top-five"></ul>
+
+          <h3>Top 3 for <span id="top-role-label">mid</span></h3>
+          <ul id="top-role"></ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="analysis">
+      <h2>Time-series analysis (sample results)</h2>
+      <p class="lede">
+        The Mathematics thesis behind this project clusters champions by how their stats
+        behave over time and forecasts where they're headed next, using R
+        (<a href="https://github.com/mmartinsie/lolScout/tree/master/RStudio">RStudio/</a>).
+        That analysis needs a full R environment and isn't recalculated on this page — these
+        are genuine pre-generated results from that work, kept here as a sample of what it
+        produces.
+      </p>
+      <div class="gallery">
+        <figure>
+          <img src="assets/winrateV.png" alt="Bar chart of win rate per champion for one patch" loading="lazy">
+          <figcaption>Win rate per champion, one patch snapshot.</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/banrateV.png" alt="Bar chart of ban rate per champion for one patch" loading="lazy">
+          <figcaption>Ban rate per champion, same patch.</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/pickrateV.png" alt="Bar chart of pick rate per champion for one patch" loading="lazy">
+          <figcaption>Pick rate per champion, same patch.</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/principalV.png" alt="Bar chart of pick rate as main role per champion" loading="lazy">
+          <figcaption>Share of picks where the champion was played in their main role.</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/seriedeashe.png" alt="Ashe's win rate over time, July 2014 to 2022" loading="lazy">
+          <figcaption>Ashe's win rate over ~8 years of patches — the kind of series the clustering and forecasting pipeline runs on.</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/serietemporaljinx.png" alt="Jinx's win rate over time" loading="lazy">
+          <figcaption>Jinx's win rate over the same period, for comparison.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <footer>
+      <p>
+        lolScout is built from two Bachelor's theses (Computer Science and Mathematics) at
+        Universidad Rey Juan Carlos. Code is
+        <a href="https://github.com/mmartinsie/lolScout/blob/master/LICENSE">MIT</a>;
+        the two thesis PDFs linked above are © the author.
+        See the <a href="https://github.com/mmartinsie/lolScout">main repository</a> for the
+        full scraper, recommender and analysis pipeline.
+      </p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+  <script src="ui.js"></script>
+</body>
+</html>
